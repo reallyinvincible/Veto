@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "91848226723",
+    "firebase_url": "https://veto-crypto.firebaseio.com",
+    "project_id": "veto-crypto",
+    "storage_bucket": "veto-crypto.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:91848226723:android:73bb2e1ed9eac772",
+        "android_client_info": {
+          "package_name": "com.reallyinvincible.veto"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "91848226723-2mtped0gdpcd7b84c5stmcgj189tqfef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.reallyinvincible.veto",
+            "certificate_hash": "2b65f66b5313307b8ba9e45f516f34b482226298"
+          }
+        },
+        {
+          "client_id": "91848226723-sg80ek3rjpcrqv8g61u54p226pqg5768.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgZ8_xQlSrVux7zOQ1WOxddQYkplU5jfc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "91848226723-sg80ek3rjpcrqv8g61u54p226pqg5768.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
