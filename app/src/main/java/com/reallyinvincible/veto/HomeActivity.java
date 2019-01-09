@@ -1,81 +1,46 @@
 package com.reallyinvincible.veto;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-
-import Twofish.Twofish_Algorithm;
+import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class HomeActivity extends AppCompatActivity {
 
-    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    Object twofishKey;
+    BottomAppBar bottomAppBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_home);
-
-        String key = "ThisIsASecretKey";
-        String message = "This is Veto. The Cypto Application";
-        int numberOfBlocks = (int) Math.ceil(((double)message.length())/16);
-
-        encyptBlock(message, key);
+        bottomAppBar = findViewById(R.id.bottom_bar);
+        bottomAppBar.replaceMenu(R.menu.bottom_bar_menu);
+        bottomAppBar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                BottomSheetKeyFragment bottomSheetKeyFragment = new BottomSheetKeyFragment();
+                bottomSheetKeyFragment.show(getSupportFragmentManager(), "KeyFragment");
+            }
+        });
+        bottomAppBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.menu_item_share_key){
+                    startActivity(new Intent(HomeActivity.this, SoundShareActivity.class));
+                    return true;
+                } else if (item.getItemId() == R.id.menu_item_receive_key){
+                    startActivity(new Intent(HomeActivity.this, DemoActivity.class));
+                    return true;
+                }
+                return false;
+            }
+        });
     }
-
-    void createKey(String Key){
-
-    }
-
-    void encyptBlock(String message, String key){
-
-        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-        byte[] messageBytes =  message.getBytes(StandardCharsets.UTF_8);
-
-        try {
-            Object twofishKey = Twofish_Algorithm.makeKey(keyBytes);
-            byte[] cipherBytes = Twofish_Algorithm.blockEncrypt(messageBytes, 0, twofishKey);
-            String cipherHexText = bytesToHex(cipherBytes);
-            Log.i("Ye dekho", String.valueOf(cipherBytes.length));
-            ((TextView)findViewById(R.id.tv_encrypted_text)).setText(cipherHexText);
-            decryptBlock(cipherBytes, key);
-
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void decryptBlock(byte[] cipher, String key){
-
-        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-
-        try {
-            Object twofishKey = Twofish_Algorithm.makeKey(keyBytes);
-            byte[] messageBytes = Twofish_Algorithm.blockDecrypt(cipher, 0, twofishKey);
-            String messageText = new String(messageBytes, StandardCharsets.UTF_8);
-            ((TextView)findViewById(R.id.tv_decrypted_text)).setText(messageText);
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = hexArray[v >>> 4];
-            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
-
-    void encrypt(){
-
-    }
-
 }
