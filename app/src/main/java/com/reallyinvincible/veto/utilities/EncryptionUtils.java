@@ -1,4 +1,4 @@
-package com.reallyinvincible.veto;
+package com.reallyinvincible.veto.utilities;
 
 import android.content.Context;
 import android.widget.Toast;
@@ -10,7 +10,7 @@ import java.util.List;
 
 import Twofish.Twofish_Algorithm;
 
-public class Utils {
+public class EncryptionUtils {
 
     private static Object twoFishkey;
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
@@ -44,7 +44,7 @@ public class Utils {
         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
         try {
             Object cryptKey = Twofish_Algorithm.makeKey(keyBytes);
-            Utils.setTwoFishkey(cryptKey);
+            EncryptionUtils.setTwoFishkey(cryptKey);
         } catch (InvalidKeyException e) {
             e.printStackTrace();
             Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
@@ -73,13 +73,47 @@ public class Utils {
 
     public static String encyptBlock(String message){
         byte[] messageBytes =  message.getBytes(StandardCharsets.UTF_8);
-        byte[] cipherBytes = Twofish_Algorithm.blockEncrypt(messageBytes, 0, Utils.getTwoFishkey());
-        return Utils.bytesToHex(cipherBytes);
+        byte[] cipherBytes = Twofish_Algorithm.blockEncrypt(messageBytes, 0, EncryptionUtils.getTwoFishkey());
+        return EncryptionUtils.bytesToHex(cipherBytes);
     }
 
     public static String decryptBlock(byte[] cipher){
-        byte[] messageBytes = Twofish_Algorithm.blockDecrypt(cipher, 0, Utils.getTwoFishkey());
+        byte[] messageBytes = Twofish_Algorithm.blockDecrypt(cipher, 0, EncryptionUtils.getTwoFishkey());
         return new String(messageBytes, StandardCharsets.UTF_8);
+    }
+
+    public static String encrypt(String message) {
+
+        List<String> messageBlocks = EncryptionUtils.textToBlocks(message, 16);
+        List<String> cipherBlocks = new ArrayList<String>();
+
+        StringBuilder encryptedText = new StringBuilder();
+
+        for (int i = 0; i < messageBlocks.size(); i++){
+            String block = messageBlocks.get(i);
+            cipherBlocks.add(EncryptionUtils.encyptBlock(block));
+            encryptedText.append(cipherBlocks.get(i));
+        }
+
+        return encryptedText.toString();
+
+    }
+
+    public static String decrypt(String cipher) {
+
+        List<String> cipherBlocks = EncryptionUtils.textToBlocks(cipher, 32);
+        List<String> messageBlocks = new ArrayList<String>();
+
+        StringBuilder decryptedText = new StringBuilder();
+
+        for (int i = 0; i < cipherBlocks.size(); i++){
+            String block = cipherBlocks.get(i);
+            messageBlocks.add(EncryptionUtils.decryptBlock(EncryptionUtils.hexStringToByteArray(block)));
+            decryptedText.append(messageBlocks.get(i));
+        }
+
+        return decryptedText.toString();
+
     }
 
     public static Object getTwoFishkey() {
@@ -87,7 +121,7 @@ public class Utils {
     }
 
     public static void setTwoFishkey(Object twoFishkey) {
-        Utils.twoFishkey = twoFishkey;
+        EncryptionUtils.twoFishkey = twoFishkey;
     }
 
 }

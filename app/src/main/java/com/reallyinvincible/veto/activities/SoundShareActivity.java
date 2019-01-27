@@ -1,4 +1,4 @@
-package com.reallyinvincible.veto;
+package com.reallyinvincible.veto.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.reallyinvincible.veto.R;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +29,6 @@ import java.util.Random;
 public class SoundShareActivity extends AppCompatActivity {
 
     private ChirpConnect chirpConnect;
-    private Context context;
 
     private static final int RESULT_REQUEST_RECORD_AUDIO = 1;
 
@@ -297,9 +297,6 @@ public class SoundShareActivity extends AppCompatActivity {
          *
          * Generate a random payload, and send it.
          */
-//        long maxPayloadLength = chirpConnect.getMaxPayloadLength();
-//        long size = (long) new Random().nextInt((int) maxPayloadLength) + 1;
-//        byte[] payload = chirpConnect.randomPayload(size);
         String testKey = "thisisas";
         byte[] payload = testKey.getBytes(StandardCharsets.UTF_8);
         int x = payload.length;

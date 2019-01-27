@@ -1,4 +1,4 @@
-package com.reallyinvincible.veto;
+package com.reallyinvincible.veto.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,12 +10,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.reallyinvincible.veto.utilities.EncryptionUtils;
+import com.reallyinvincible.veto.R;
 
 public class DemoActivity extends AppCompatActivity {
 
-    private static final String TAG = "DemoActivity";
     private final String KEY = "ThisIsASecretKey";
     private Context context;
     EditText keyEdiText, messageEditText;
@@ -39,7 +38,7 @@ public class DemoActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 keyEdiText.setText(KEY);
-                Utils.createKey(KEY, context);
+                EncryptionUtils.createKey(KEY, context);
             }
         });
 
@@ -49,9 +48,12 @@ public class DemoActivity extends AppCompatActivity {
                 String message = messageEditText.getText().toString();
                 String key = keyEdiText.getText().toString();
                 int keyLength = key.length();
-                if (keyLength == 16 || keyLength == 8 || keyLength == 12) {
-                    Utils.createKey(key, getApplicationContext());
-                    encrypt(message);
+                if (keyLength == 16 || keyLength == 24 || keyLength == 32) {
+                    EncryptionUtils.createKey(key, getApplicationContext());
+                    String encryptedText = EncryptionUtils.encrypt(message);
+                    String decryptedText = EncryptionUtils.decrypt(encryptedText);
+                    encyptedTextView.setText(encryptedText);
+                    decryptedTextView.setText(decryptedText);
                 }
                 else {
                     Toast.makeText(DemoActivity.this, "Please Enter A Valid Key", Toast.LENGTH_SHORT).show();
@@ -59,43 +61,6 @@ public class DemoActivity extends AppCompatActivity {
             }
         });
     }
-
-
-    void encrypt(String message) {
-        
-        List<String> messageBlocks = Utils.textToBlocks(message, 16);
-        List<String> cipherBlocks = new ArrayList<String>();
-
-        StringBuilder encryptedText = new StringBuilder();
-
-        for (int i = 0; i < messageBlocks.size(); i++){
-            String block = messageBlocks.get(i);
-            cipherBlocks.add(Utils.encyptBlock(block));
-            encryptedText.append(cipherBlocks.get(i));
-        }
-
-        ((TextView)findViewById(R.id.tv_encrypted_text)).setText(encryptedText.toString());
-        decrypt(encryptedText.toString());
-
-    }
-    
-    void decrypt(String cipher) {
-
-        List<String> cipherBlocks = Utils.textToBlocks(cipher, 32);
-        List<String> messageBlocks = new ArrayList<String>();
-
-        StringBuilder decryptedText = new StringBuilder();
-
-        for (int i = 0; i < cipherBlocks.size(); i++){
-            String block = cipherBlocks.get(i);
-            messageBlocks.add(Utils.decryptBlock(Utils.hexStringToByteArray(block)));
-            decryptedText.append(messageBlocks.get(i));
-        }
-
-        ((TextView)findViewById(R.id.tv_decrypted_text)).setText(decryptedText.toString());
-
-    }
-    
 
 
 }

@@ -1,4 +1,4 @@
-package com.reallyinvincible.veto;
+package com.reallyinvincible.veto.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -7,10 +7,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.reallyinvincible.veto.BottomSheetKeyFragment;
+import com.reallyinvincible.veto.R;
 
 public class HomeActivity extends AppCompatActivity {
 
