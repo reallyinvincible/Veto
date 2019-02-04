@@ -18,6 +18,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.reallyinvincible.veto.EncryptedMessageAdapter;
 import com.reallyinvincible.veto.bottomfragments.BottomSheetSendMessage;
@@ -40,12 +41,10 @@ public class HomeActivity extends AppCompatActivity {
     DatabaseReference mRoomReference;
     public static SendMessageInterface sendMessageInterface;
     private SecureRoom secureRoom;
-    private List<EncryptedMessage> messagesLocalCopy, messagesOnlineCopy;
-    private String username;
+    private List<EncryptedMessage> messagesLocalCopy;
+    private String username, roomId;
     private BottomSheetSendMessage bottomSheetSendMessage;
     private RecyclerView messageRecyclerView;
-    private EncryptedMessageAdapter adapter;
-    private ChildEventListener childEventListener;
 
 
     @Override
@@ -58,13 +57,13 @@ public class HomeActivity extends AppCompatActivity {
         username = sharedPreferences.getString("Username", "Anonymous");
         secureRoom = gson.fromJson(sharedPreferences.getString("SecureRoom", null), SecureRoom.class);
         messagesLocalCopy = secureRoom.getMessages();
+        if (messagesLocalCopy == null)
+            messagesLocalCopy = new ArrayList<EncryptedMessage>();
+        roomId = secureRoom.getRoomId();
         messageRecyclerView = findViewById(R.id.rv_messages);
-        if (messagesLocalCopy.size() != 0){
-            messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messagesLocalCopy));
-        }
 
         mDatabase = FirebaseDatabase.getInstance();
-        mRoomReference = mDatabase.getReference().child("Rooms").child(secureRoom.getRoomId());
+        mRoomReference = mDatabase.getReference().child("Rooms");
 
         bottomAppBar = findViewById(R.id.bottom_bar);
         bottomAppBar.replaceMenu(R.menu.bottom_bar_menu);
@@ -104,37 +103,21 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        childEventListener = new ChildEventListener() {
+        mRoomReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                EncryptedMessage encryptedMessage = dataSnapshot.getValue(EncryptedMessage.class);
-                messagesLocalCopy.add(encryptedMessage);
-                int a = 10;
-                messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messagesLocalCopy));
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                SecureRoom room = dataSnapshot.child(roomId).getValue(SecureRoom.class);
+                List<EncryptedMessage> encryptedMessages = room.getMessages();
+                messagesLocalCopy = encryptedMessages;
+                if (encryptedMessages != null)
+                    messageRecyclerView.setAdapter(new EncryptedMessageAdapter(encryptedMessages));
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        };
-
-        mRoomReference.child("messages").addChildEventListener(childEventListener);
+        });
 
     }
 
@@ -144,13 +127,9 @@ public class HomeActivity extends AppCompatActivity {
         String dateStamp = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
         String timeStamp = new SimpleDateFormat("HH:mm").format(new Date());
         EncryptedMessage encryptedMessage = new EncryptedMessage(username, cipherText, dateStamp, timeStamp);
-        if (messagesLocalCopy == null || messagesLocalCopy.size() == 0){
-            messagesLocalCopy = new ArrayList<EncryptedMessage>();
-        }
-        messagesOnlineCopy = messagesLocalCopy;
-        messagesOnlineCopy.add(encryptedMessage);
-        secureRoom.setMessages(messagesOnlineCopy);
-        mRoomReference.setValue(secureRoom);
+        messagesLocalCopy.add(encryptedMessage);
+        secureRoom.setMessages(messagesLocalCopy);
+        mRoomReference.child(roomId).setValue(secureRoom);
     }
 
     void openMessageDialogue(){
