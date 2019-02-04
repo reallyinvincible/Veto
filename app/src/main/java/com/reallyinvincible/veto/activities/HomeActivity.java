@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.firebase.database.ChildEventListener;
@@ -41,10 +40,11 @@ public class HomeActivity extends AppCompatActivity {
     DatabaseReference mRoomReference;
     public static SendMessageInterface sendMessageInterface;
     private SecureRoom secureRoom;
-    private List<EncryptedMessage> messages;
+    private List<EncryptedMessage> messagesLocalCopy, messagesOnlineCopy;
     private String username;
     private BottomSheetSendMessage bottomSheetSendMessage;
     private RecyclerView messageRecyclerView;
+    private EncryptedMessageAdapter adapter;
     private ChildEventListener childEventListener;
 
 
@@ -57,15 +57,14 @@ public class HomeActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("Details", MODE_PRIVATE);
         username = sharedPreferences.getString("Username", "Anonymous");
         secureRoom = gson.fromJson(sharedPreferences.getString("SecureRoom", null), SecureRoom.class);
-        messages = secureRoom.getMessages();
+        messagesLocalCopy = secureRoom.getMessages();
+        messageRecyclerView = findViewById(R.id.rv_messages);
+        if (messagesLocalCopy.size() != 0){
+            messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messagesLocalCopy));
+        }
 
         mDatabase = FirebaseDatabase.getInstance();
         mRoomReference = mDatabase.getReference().child("Rooms").child(secureRoom.getRoomId());
-
-        messageRecyclerView = findViewById(R.id.rv_messages);
-        if (messages.size() != 0){
-            messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messages));
-        }
 
         bottomAppBar = findViewById(R.id.bottom_bar);
         bottomAppBar.replaceMenu(R.menu.bottom_bar_menu);
@@ -109,8 +108,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 EncryptedMessage encryptedMessage = dataSnapshot.getValue(EncryptedMessage.class);
-                messages.add(encryptedMessage);
-                messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messages));
+                messagesLocalCopy.add(encryptedMessage);
+                int a = 10;
+                messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messagesLocalCopy));
             }
 
             @Override
@@ -144,12 +144,12 @@ public class HomeActivity extends AppCompatActivity {
         String dateStamp = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
         String timeStamp = new SimpleDateFormat("HH:mm").format(new Date());
         EncryptedMessage encryptedMessage = new EncryptedMessage(username, cipherText, dateStamp, timeStamp);
-        if (messages == null || messages.size() == 0){
-            messages  = new ArrayList<EncryptedMessage>();
+        if (messagesLocalCopy == null || messagesLocalCopy.size() == 0){
+            messagesLocalCopy = new ArrayList<EncryptedMessage>();
         }
-        List<EncryptedMessage> messageList = messages;
-        messageList.add(encryptedMessage);
-        secureRoom.setMessages(messageList);
+        messagesOnlineCopy = messagesLocalCopy;
+        messagesOnlineCopy.add(encryptedMessage);
+        secureRoom.setMessages(messagesOnlineCopy);
         mRoomReference.setValue(secureRoom);
     }
 
