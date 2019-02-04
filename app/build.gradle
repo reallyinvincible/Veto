@@ -26,10 +26,13 @@ dependencies {
     implementation 'io.chirp.connect:chirp-connect-release@aar'
     implementation 'com.squareup.okhttp3:okhttp:3.12.0'
     implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-database:16.0.6'
+    implementation 'com.airbnb.android:lottie:2.8.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation files('libs/twofish.jar')
+    implementation 'com.google.code.gson:gson:2.2.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

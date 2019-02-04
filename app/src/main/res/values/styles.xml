@@ -9,6 +9,7 @@
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="android:fontFamily">@font/primary_font</item>
     </style>
 
 </resources>
