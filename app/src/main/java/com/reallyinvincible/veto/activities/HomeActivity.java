@@ -1,7 +1,6 @@
 package com.reallyinvincible.veto.activities;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,7 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.reallyinvincible.veto.EncryptedMessageAdapter;
 import com.reallyinvincible.veto.bottomfragments.BottomSheetSendMessage;
-import com.reallyinvincible.veto.SendMessageInterface;
+import com.reallyinvincible.veto.MessageInteractionInterface;
 import com.reallyinvincible.veto.bottomfragments.BottomSheetKeyFragment;
 import com.reallyinvincible.veto.R;
 import com.reallyinvincible.veto.models.EncryptedMessage;
@@ -39,11 +37,14 @@ public class HomeActivity extends AppCompatActivity {
     BottomAppBar bottomAppBar;
     FirebaseDatabase mDatabase;
     DatabaseReference mRoomReference;
-    public static SendMessageInterface sendMessageInterface;
+    public static MessageInteractionInterface sendMessageInterface;
+    public static String keyString = null;
+    private static String lockString = null;
     private SecureRoom secureRoom;
     private List<EncryptedMessage> messagesLocalCopy;
     private String username, roomId;
     private BottomSheetSendMessage bottomSheetSendMessage;
+    private BottomSheetKeyFragment bottomSheetKeyFragment;
     private RecyclerView messageRecyclerView;
 
 
@@ -51,7 +52,6 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
         Gson gson = new Gson();
         SharedPreferences sharedPreferences = getSharedPreferences("Details", MODE_PRIVATE);
         username = sharedPreferences.getString("Username", "Anonymous");
@@ -70,8 +70,7 @@ public class HomeActivity extends AppCompatActivity {
         bottomAppBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                BottomSheetKeyFragment bottomSheetKeyFragment = new BottomSheetKeyFragment();
-                bottomSheetKeyFragment.show(getSupportFragmentManager(), "KeyFragment");
+                openKeyDialogue();
             }
         });
         bottomAppBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -88,11 +87,18 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        sendMessageInterface = new SendMessageInterface() {
+        sendMessageInterface = new MessageInteractionInterface() {
             @Override
-            public void sendMessage(String message) {
+            public void sendMessage(String message, String lock) {
                 bottomSheetSendMessage.dismiss();
-                addMessage(message);
+                addMessage(message, lock);
+            }
+
+            @Override
+            public void addKey(String key) {
+                setKeyString(key);
+                bottomSheetKeyFragment.dismiss();
+                messageRecyclerView.setAdapter(new EncryptedMessageAdapter(messagesLocalCopy, getKeyString()));
             }
         };
 
@@ -110,7 +116,7 @@ public class HomeActivity extends AppCompatActivity {
                 List<EncryptedMessage> encryptedMessages = room.getMessages();
                 messagesLocalCopy = encryptedMessages;
                 if (encryptedMessages != null)
-                    messageRecyclerView.setAdapter(new EncryptedMessageAdapter(encryptedMessages));
+                    messageRecyclerView.setAdapter(new EncryptedMessageAdapter(encryptedMessages, getKeyString()));
             }
 
             @Override
@@ -121,8 +127,9 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-    void addMessage(String message){
-        EncryptionUtils.createKey("ThisIsASecretKey", getApplicationContext());
+    void addMessage(String message, String lock){
+        EncryptionUtils.createKey(lock, getApplicationContext());
+        lockString = lock;
         String cipherText = EncryptionUtils.encrypt(message);
         String dateStamp = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
         String timeStamp = new SimpleDateFormat("HH:mm").format(new Date());
@@ -137,8 +144,28 @@ public class HomeActivity extends AppCompatActivity {
         bottomSheetSendMessage.show(getSupportFragmentManager(), "SendMessage");
     }
 
-    public static SendMessageInterface getSendMessageInterface() {
+    void openKeyDialogue(){
+        bottomSheetKeyFragment = new BottomSheetKeyFragment();
+        bottomSheetKeyFragment.show(getSupportFragmentManager(), "AddKey");
+    }
+
+    public static MessageInteractionInterface getSendMessageInterface() {
         return sendMessageInterface;
     }
 
+    public static String getKeyString() {
+        return keyString;
+    }
+
+    public static void setKeyString(String keyString) {
+        HomeActivity.keyString = keyString;
+    }
+
+    public static String getLockString() {
+        return lockString;
+    }
+
+    public static void setLockString(String lockString) {
+        HomeActivity.lockString = lockString;
+    }
 }

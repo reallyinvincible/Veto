@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.reallyinvincible.veto.models.EncryptedMessage;
+import com.reallyinvincible.veto.utilities.EncryptionUtils;
 
 import java.util.List;
 
@@ -15,9 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 public class EncryptedMessageAdapter extends RecyclerView.Adapter<EncryptedMessageAdapter.EncryptedMessageViewHolder> {
 
     List<EncryptedMessage> messageList;
+    String keyString;
 
-    public EncryptedMessageAdapter(List<EncryptedMessage> messageList) {
+    public EncryptedMessageAdapter(List<EncryptedMessage> messageList, String keyString) {
         this.messageList = messageList;
+        this.keyString = keyString;
     }
 
     @NonNull
@@ -31,7 +34,14 @@ public class EncryptedMessageAdapter extends RecyclerView.Adapter<EncryptedMessa
     @Override
     public void onBindViewHolder(@NonNull EncryptedMessageViewHolder holder, int position) {
         EncryptedMessage encryptedMessage = messageList.get(position);
-        holder.messageTextView.setText(encryptedMessage.getEncryptedText());
+
+        if (keyString != null){
+            EncryptionUtils.createKey(keyString, holder.itemView.getContext());
+            String decryptedMessage = EncryptionUtils.decrypt(encryptedMessage.getEncryptedText());
+            holder.messageTextView.setText(decryptedMessage);
+        } else {
+            holder.messageTextView.setText(encryptedMessage.getEncryptedText());
+        }
         holder.nameTextView.setText(encryptedMessage.getUserName());
         holder.dateTextView.setText(encryptedMessage.getMessageDate());
         holder.timeTextView.setText(encryptedMessage.getMessageTime());

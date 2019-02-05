@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -18,7 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.reallyinvincible.veto.R;
-import com.reallyinvincible.veto.SendMessageInterface;
 import com.reallyinvincible.veto.models.EncryptedMessage;
 import com.reallyinvincible.veto.models.SecureRoom;
 
