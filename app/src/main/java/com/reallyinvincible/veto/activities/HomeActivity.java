@@ -57,8 +57,6 @@ public class HomeActivity extends AppCompatActivity {
         username = sharedPreferences.getString("Username", "Anonymous");
         secureRoom = gson.fromJson(sharedPreferences.getString("SecureRoom", null), SecureRoom.class);
         messagesLocalCopy = secureRoom.getMessages();
-        if (messagesLocalCopy == null)
-            messagesLocalCopy = new ArrayList<EncryptedMessage>();
         roomId = secureRoom.getRoomId();
         messageRecyclerView = findViewById(R.id.rv_messages);
 
@@ -134,6 +132,8 @@ public class HomeActivity extends AppCompatActivity {
         String dateStamp = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
         String timeStamp = new SimpleDateFormat("HH:mm").format(new Date());
         EncryptedMessage encryptedMessage = new EncryptedMessage(username, cipherText, dateStamp, timeStamp);
+        if (messagesLocalCopy == null)
+            messagesLocalCopy = new ArrayList<EncryptedMessage>();
         messagesLocalCopy.add(encryptedMessage);
         secureRoom.setMessages(messagesLocalCopy);
         mRoomReference.child(roomId).setValue(secureRoom);

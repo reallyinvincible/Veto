@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.google.android.material.snackbar.Snackbar;
 import com.reallyinvincible.veto.R;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -99,16 +100,13 @@ public class SoundShareActivity extends AppCompatActivity {
 
         @Override
         public void onSending(byte[] data, byte channel) {
-            /**
-             * onSending is called when a send event begins.
-             * The data argument contains the payload being sent.
-             */
-            String hexData = "null";
+
+            int intData = 0;
             if (data != null) {
-                hexData = chirpConnect.payloadToHexString(data);
+                intData = fromByteArray(data);
             }
-            Log.v("Veto", "ConnectCallback: onSending: " + hexData + " on channel: " + channel);
-            updateLastPayload(hexData);
+            Log.v("Veto", "ConnectCallback: onSending: " + String.valueOf(intData) + " on channel: " + channel);
+            updateLastPayload(String.valueOf(intData));
         }
 
         @Override
@@ -117,36 +115,29 @@ public class SoundShareActivity extends AppCompatActivity {
              * onSent is called when a send event has completed.
              * The data argument contains the payload that was sent.
              */
-            String hexData = "null";
+            int intData = 0;
             if (data != null) {
-                hexData = chirpConnect.payloadToHexString(data);
+                intData = fromByteArray(data);
             }
-            updateLastPayload(hexData);
-            Log.v("Veto", "ConnectCallback: onSent: " + hexData + " on channel: " + channel);
+            Log.v("Veto", "ConnectCallback: onSent: " + String.valueOf(intData) + " on channel: " + channel);
+            updateLastPayload(String.valueOf(intData));
         }
 
         @Override
         public void onReceiving(byte channel) {
-            /**
-             * onReceiving is called when a receive event begins.
-             * No data has yet been received.
-             */
+
             Log.v("Veto", "ConnectCallback: onReceiving on channel: " + channel);
         }
 
         @Override
         public void onReceived(byte[] data, byte channel) {
-            /**
-             * onReceived is called when a receive event has completed.
-             * If the payload was decoded successfully, it is passed in data.
-             * Otherwise, data is null.
-             */
-            String hexData = "null";
+
+            int intData = 0;
             if (data != null) {
-                hexData = new String(data, StandardCharsets.UTF_8);
+                intData = fromByteArray(data);
             }
-            Log.v("Veto", "ConnectCallback: onReceived: " + hexData + " on channel: " + channel);
-            updateLastPayload(hexData);
+            Log.v("Veto", "ConnectCallback: onReceived: " + String.valueOf(intData) + " on channel: " + channel);
+            updateLastPayload(String.valueOf(intData));
         }
 
         @Override
@@ -292,14 +283,8 @@ public class SoundShareActivity extends AppCompatActivity {
     }
 
     public void sendPayload(View view) {
-        /**
-         * A payload is a byte array dynamic size with a maximum size defined by the config string.
-         *
-         * Generate a random payload, and send it.
-         */
-        String testKey = "thisisas";
-        byte[] payload = testKey.getBytes(StandardCharsets.UTF_8);
-        int x = payload.length;
+
+        byte[] payload = toByteArray(48);
         long maxSize = chirpConnect.getMaxPayloadLength();
         if (maxSize < payload.length) {
             Log.e("ConnectError: ", "Invalid Payload");
@@ -310,6 +295,15 @@ public class SoundShareActivity extends AppCompatActivity {
         if (error.getCode() > 0) {
             Log.e("ConnectError: ", error.getMessage());
         }
+    }
+
+    byte[] toByteArray(int value) {
+        return  ByteBuffer.allocate(4).putInt(value).array();
+    }
+
+
+    int fromByteArray(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getInt();
     }
 
 }
